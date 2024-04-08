@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CLIENT
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  password   String
+  firstName  String  @map("first_name")
+  lastName   String  @map("last_name")
+  patronymic String?
+  isActive   Boolean @default(true) @map("is_active")
+
+  email    String @unique
+  telegram String @unique
+
+  isDeleted Boolean @default(false) @map("is_deleted")
+
+  role UserRole @default(CLIENT)
+  bots Bot[]
+
+  @@map("user")
+}
+
+model Bot {
+  telegramId String   @id @map("telegram_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  isActive Boolean @default(false) @map("is_active")
+  isPublic Boolean @default(false) @map("is_public")
+  title    String
+  telegram String  @unique
+
+  owner   User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId Int?  @map("owner_id")
+
+  statuses     Status[]
+  botUsers     BotUser[]
+  botTemplates Template[]
+
+  @@map("bot")
+}
+
+model Status {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  code     String
+  titleRu  String?
+  titleEn  String?
+  isActive Boolean @default(true) @map("is_active")
+
+  bot   Bot    @relation(fields: [botId], references: [telegramId], onDelete: Cascade)
+  botId String @map("bot_id")
+
+  occupations Occupation[]
+  botUsers    BotUser[]
+
+  @@map("status")
+}
+
+model Occupation {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  code     String
+  titleRu  String?
+  titleEn  String?
+  isActive Boolean @default(true) @map("is_active")
+
+  status   Status @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  statusId Int    @map("status_id")
+
+  botUsers BotUser[]
+  requests Request[]
+
+  @@map("occupation")
+}
+
+enum Language {
+  EN
+  RU
+
+  @@map("language")
+}
+
+model BotUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  language Language?
+  isActive Boolean   @default(true) @map("is_active")
+
+  status   Status? @relation(fields: [statusId], references: [id], onDelete: SetNull)
+  statusId Int?    @map("status_id")
+
+  occupation   Occupation? @relation(fields: [occupationId], references: [id], onDelete: SetNull)
+  occupationId Int?        @map("occupation_id")
+
+  isFinished Boolean @default(false) @map("is_finished")
+  telegramId String  @map("telegram_id")
+  additional Json?
+
+  bot      Bot       @relation(fields: [botId], references: [telegramId], onDelete: Cascade)
+  botId    String    @map("bot_id")
+  requests Request[]
+
+  @@unique([botId, telegramId])
+  @@map("bot_user")
+}
+
+enum TemplateType {
+  STATIC
+  ANIMATED
+}
+
+model Template {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title      String
+  overlaying Boolean @default(false)
+  isActive   Boolean @default(false) @map("is_active")
+
+  type TemplateType @default(STATIC)
+
+  bot   Bot    @relation(fields: [botId], references: [telegramId], onDelete: Cascade)
+  botId String @map("bot_id")
+
+  requests Request[]
+
+  @@map("template")
+}
+
+enum RequestType {
+  INSIDE
+  ABOVE
+
+  @@map("request_type")
+}
+
+model Request {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  type RequestType
+
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  templateId Int      @map("template_id")
+
+  occupation   Occupation? @relation(fields: [occupationId], references: [id], onDelete: Restrict)
+  occupationId Int?        @map("occupation_id")
+
+  botUser   BotUser? @relation(fields: [botUserId], references: [id], onDelete: Restrict)
+  botUserId Int?     @map("bot_user_id")
+
+  @@map("request")
+}
