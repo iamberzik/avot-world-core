@@ -11,8 +11,8 @@ import { BotModule } from './bot/bot.module'
 import { BotUserModule } from './bot-user/bot-user.module'
 import { StatusModule } from './status/status.module'
 import { OccupationModule } from './occupation/occupation.module'
-import { TemplateModule } from './template/template.module';
-import { RequestModule } from './request/request.module';
+import { TemplateModule } from './template/template.module'
+import { RequestModule } from './request/request.module'
 
 @Module({
 	imports: [
@@ -22,7 +22,7 @@ import { RequestModule } from './request/request.module';
 		ThrottlerModule.forRoot([
 			{
 				ttl: 60000,
-				limit: 100
+				limit: 1000
 			}
 		]),
 		AuthModule,

@@ -27,7 +27,8 @@ export class BotUserService {
 				data: {
 					botId: dto.botId,
 					telegramId: dto.userId,
-					additional: dto.additional || {}
+					additional: dto.additional || {},
+					language: dto.language || undefined
 				},
 				select: {
 					telegramId: true,
