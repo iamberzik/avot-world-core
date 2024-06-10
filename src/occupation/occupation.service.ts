@@ -12,7 +12,8 @@ export class OccupationService {
 			},
 			select: {
 				titleRu: true,
-				titleEn: true
+				titleEn: true,
+				titleUz: true
 			}
 		})
 	}
@@ -33,6 +34,9 @@ export class OccupationService {
 							},
 							{
 								titleEn: title
+							},
+							{
+								titleUz: title
 							}
 						]
 					}

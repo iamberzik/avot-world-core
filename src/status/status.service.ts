@@ -13,7 +13,8 @@ export class StatusService {
 			select: {
 				id: true,
 				titleRu: true,
-				titleEn: true
+				titleEn: true,
+				titleUz: true
 			}
 		})
 	}
@@ -32,6 +33,9 @@ export class StatusService {
 							},
 							{
 								titleEn: title
+							},
+							{
+								titleUz: title
 							}
 						]
 					}

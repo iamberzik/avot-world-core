@@ -96,6 +96,10 @@ export class AuthService {
 		}
 	}
 
+	async getMe(userId: number) {
+		return await this.returnDefault(userId)
+	}
+
 	private async issueTokens(userId: number, role_slug: string) {
 		const data = { id: userId, role: role_slug }
 
@@ -131,7 +135,11 @@ export class AuthService {
 			},
 			select: {
 				id: true,
-				role: true
+				role: true,
+				email: true,
+				firstName: true,
+				lastName: true,
+				telegram: true
 			}
 		})
 
