@@ -15,6 +15,7 @@ export class BotService {
 				title: true,
 				telegram: true,
 				avatar: true,
+				type: true,
 				_count: {
 					select: {
 						botUsers: true
@@ -34,6 +35,7 @@ export class BotService {
 				title: true,
 				telegram: true,
 				avatar: true,
+				type: true,
 				_count: {
 					select: {
 						botUsers: true

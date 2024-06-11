@@ -34,6 +34,11 @@ model User {
   @@map("user")
 }
 
+enum BotType {
+  AVATAR
+  OTHER
+}
+
 model Bot {
   telegramId String   @id @map("telegram_id")
   createdAt  DateTime @default(now()) @map("created_at")
@@ -44,6 +49,7 @@ model Bot {
   title    String
   telegram String  @unique
   avatar   String  @default("/static/default-bot-avatar.png")
+  type     BotType @default(AVATAR)
 
   owner   User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId Int?  @map("owner_id")
