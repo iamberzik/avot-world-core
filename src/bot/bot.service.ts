@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
+import { UserRole } from '@prisma/client'
 
 @Injectable()
 export class BotService {
@@ -48,12 +49,22 @@ export class BotService {
 		})
 	}
 
-	getOwnedBots(userId: number) {
-		return this.prisma.bot.findMany({
+	async getOwnedBots(userId: number) {
+		const user = await this.prisma.user.findUnique({
 			where: {
-				ownerId: userId
+				id: userId
 			}
 		})
+
+		if (user.role === UserRole.ADMIN) {
+			return this.prisma.bot.findMany()
+		} else {
+			return this.prisma.bot.findMany({
+				where: {
+					ownerId: userId
+				}
+			})
+		}
 	}
 
 	async getBotStatByIdAndQuery(botId: string, dto: any) {
