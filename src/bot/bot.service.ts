@@ -134,7 +134,15 @@ export class BotService {
 		const requests = await this.prisma.request.findMany({
 			where: {
 				template: {
-					title: dto.template.toLowerCase() === 'все' ? undefined : dto.template
+					AND: [
+						{
+							title:
+								dto.template.toLowerCase() === 'все' ? undefined : dto.template
+						},
+						{
+							botId: botId
+						}
+					]
 				}
 			},
 			select: {
@@ -157,8 +165,7 @@ export class BotService {
 				AND: [
 					{
 						botId
-					},
-					{}
+					}
 				]
 			},
 			select: {
@@ -174,7 +181,15 @@ export class BotService {
 			where: {
 				occupation: {
 					status: {
-						titleRu: dto.status.toLowerCase() === 'все' ? undefined : dto.status
+						AND: [
+							{
+								titleRu:
+									dto.status.toLowerCase() === 'все' ? undefined : dto.status
+							},
+							{
+								botId: botId
+							}
+						]
 					}
 				}
 			},
