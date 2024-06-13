@@ -108,7 +108,8 @@ export class BotUserService {
 						id: true,
 						code: true,
 						titleRu: true,
-						titleEn: true
+						titleEn: true,
+						titleUz: true
 					}
 				},
 				occupation: {
@@ -116,7 +117,8 @@ export class BotUserService {
 						id: true,
 						code: true,
 						titleRu: true,
-						titleEn: true
+						titleEn: true,
+						titleUz: true
 					}
 				}
 			}
