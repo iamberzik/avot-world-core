@@ -23,8 +23,23 @@ export class BotController {
 		return this.botService.getBotById(botId)
 	}
 
-	@Post(':botId/stat')
-	getBotStatByIdAndQuery(@Param('botId') botId: string, @Body() dto: any) {
-		return this.botService.getBotStatByIdAndQuery(botId, dto)
+	@Post(':botId/stat/users')
+	getBotUsersStat(@Param('botId') botId: string, @Body() dto: any) {
+		return this.botService.getBotUsersStat(botId, dto)
+	}
+
+	@Post(':botId/stat/requests')
+	getBotRequestsStat(@Param('botId') botId: string, @Body() dto: any) {
+		return this.botService.getBotRequestsStat(botId, dto)
+	}
+
+	@Post(':botId/stat/templates')
+	getBotTemplatesStat(@Param('botId') botId: string, @Body() dto: any) {
+		return this.botService.getBotTemplatesStat(botId, dto)
+	}
+
+	@Post(':botId/stat/statuses')
+	getBotStatusesStat(@Param('botId') botId: string, @Body() dto: any) {
+		return this.botService.getBotStatusesStat(botId, dto)
 	}
 }

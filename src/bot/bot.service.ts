@@ -7,11 +7,12 @@ export class BotService {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async getBotById(botId: string) {
-		return this.prisma.bot.findUnique({
+		const bot = await this.prisma.bot.findUnique({
 			where: {
 				telegramId: botId
 			},
 			select: {
+				telegramId: true,
 				isActive: true,
 				title: true,
 				telegram: true,
@@ -19,11 +20,26 @@ export class BotService {
 				type: true,
 				_count: {
 					select: {
-						botUsers: true
+						botUsers: true,
+						statuses: true,
+						botTemplates: true
 					}
 				}
 			}
 		})
+
+		const requests = await this.prisma.request.count({
+			where: {
+				template: {
+					botId
+				}
+			}
+		})
+
+		return {
+			...bot,
+			requests
+		}
 	}
 
 	async getPublicBots() {
@@ -67,7 +83,7 @@ export class BotService {
 		}
 	}
 
-	async getBotStatByIdAndQuery(botId: string, dto: any) {
+	async getBotUsersStat(botId: string, dto: any) {
 		const users = await this.prisma.botUser.findMany({
 			where: {
 				botId
@@ -80,6 +96,10 @@ export class BotService {
 			}
 		})
 
+		return this.getDataOutput(dto, users)
+	}
+
+	async getBotRequestsStat(botId: string, dto: any) {
 		const requests = await this.prisma.request.findMany({
 			where: {
 				template: {
@@ -94,19 +114,82 @@ export class BotService {
 			}
 		})
 
-		const { filterStartDate, filterEndDate } = this.getLimitData(
-			dto.from,
-			dto.to
-		)
+		return this.getDataOutput(dto, requests)
+	}
 
-		const dataWithDates = this.prepareData(users, requests, filterEndDate)
-		const output = this.filterOutput(
-			dataWithDates,
-			filterStartDate,
-			filterEndDate
-		)
+	async getBotTemplatesStat(botId: string, dto: any) {
+		const templates = await this.prisma.template.findMany({
+			where: {
+				botId
+			},
+			select: {
+				id: true,
+				title: true
+			},
+			orderBy: {
+				createdAt: 'asc'
+			}
+		})
 
-		return output
+		const requests = await this.prisma.request.findMany({
+			where: {
+				template: {
+					title: dto.template.toLowerCase() === 'все' ? undefined : dto.template
+				}
+			},
+			select: {
+				createdAt: true
+			},
+			orderBy: {
+				createdAt: 'asc'
+			}
+		})
+
+		return {
+			templates,
+			requests: this.getDataOutput(dto, requests)
+		}
+	}
+
+	async getBotStatusesStat(botId: string, dto: any) {
+		const statuses = await this.prisma.status.findMany({
+			where: {
+				AND: [
+					{
+						botId
+					},
+					{}
+				]
+			},
+			select: {
+				id: true,
+				titleRu: true
+			},
+			orderBy: {
+				createdAt: 'asc'
+			}
+		})
+
+		const requests = await this.prisma.request.findMany({
+			where: {
+				occupation: {
+					status: {
+						titleRu: dto.status.toLowerCase() === 'все' ? undefined : dto.status
+					}
+				}
+			},
+			select: {
+				createdAt: true
+			},
+			orderBy: {
+				createdAt: 'asc'
+			}
+		})
+
+		return {
+			statuses,
+			requests: this.getDataOutput(dto, requests)
+		}
 	}
 
 	groupByDate(array) {
@@ -167,16 +250,14 @@ export class BotService {
 		}
 	}
 
-	prepareData(users, requests, endDate) {
+	prepareData(data, endDate) {
 		const dates = this.getDatesArray(
-			users[0].createdAt,
-			this.compareDates(users[users.length - 1].createdAt, endDate)
+			data[0].createdAt,
+			this.compareDates(data[data.length - 1].createdAt, endDate)
 		)
 
-		let requestGroups = this.groupByDate(requests)
-		let usersGroups = this.groupByDate(users)
-		let numberOfUsers = 0
-		let numberOfRequests = 0
+		let groups = this.groupByDate(data)
+		let value = 0
 
 		let output = {}
 
@@ -184,17 +265,13 @@ export class BotService {
 
 		for (let i = 0; i < dates.length; i++) {
 			const key = moment(dates[i]).format('YYYY-MM-DD')
-			if (key in requestGroups) {
-				numberOfRequests += requestGroups[key].length
-			}
+			const change = key in groups ? groups[key].length : 0
 
-			if (key in usersGroups) {
-				numberOfUsers += usersGroups[key].length
-			}
+			value += change
 
 			output[key] = {
-				users: numberOfUsers,
-				requests: numberOfRequests
+				value,
+				change
 			}
 		}
 
@@ -210,5 +287,15 @@ export class BotService {
 		})
 
 		return output
+	}
+
+	getDataOutput(dto, data) {
+		const { filterStartDate, filterEndDate } = this.getLimitData(
+			dto.from,
+			dto.to
+		)
+		const dataWithDates = this.prepareData(data, filterEndDate)
+
+		return this.filterOutput(dataWithDates, filterStartDate, filterEndDate)
 	}
 }

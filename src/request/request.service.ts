@@ -7,8 +7,6 @@ export class RequestService {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async create(dto: CreateRequestDto) {
-		console.log(dto)
-
 		const user = await this.prisma.botUser.findFirst({
 			where: {
 				AND: [
