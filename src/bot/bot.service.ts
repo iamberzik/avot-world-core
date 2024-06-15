@@ -309,6 +309,11 @@ export class BotService {
 			dto.from,
 			dto.to
 		)
+
+		if (data.length === 0) {
+			return {}
+		}
+
 		const dataWithDates = this.prepareData(data, filterEndDate)
 
 		return this.filterOutput(dataWithDates, filterStartDate, filterEndDate)
